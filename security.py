@@ -39,6 +39,9 @@ def encrypt_message(message: str, code: str) -> str:
     return base64.b64encode(encrypted_bytes).decode("ascii")
 
 def decrypt_message(stored_value: str, code: str) -> str:
-    encrypted_bytes = base64.b64decode(stored_value.encode("ascii"))
-    encrypted = encrypted_bytes.decode("utf-8", errors="ignore")
-    return encrypt_decrypt(encrypted, code)
+    try:
+        encrypted_bytes = base64.b64decode(stored_value.encode("ascii"))
+        encrypted = encrypted_bytes.decode("utf-8", errors="ignore")
+        return encrypt_decrypt(encrypted, code)
+    except Exception:
+        return "[Decryption Error] possibly wrong room code"
