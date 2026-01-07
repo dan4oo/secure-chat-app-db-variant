@@ -1,5 +1,6 @@
 import hashlib
 import secrets
+import base64
 
 def hash_password(password: str) -> str:
     """
@@ -32,3 +33,12 @@ def encrypt_decrypt(message, code):
         result.append(chr(ord(char) ^ key[i % len(key)]))
     return "".join(result)
 
+def encrypt_message(message: str, code: str) -> str:
+    encrypted = encrypt_decrypt(message, code)   # your XOR function
+    encrypted_bytes = encrypted.encode("utf-8", errors="ignore")
+    return base64.b64encode(encrypted_bytes).decode("ascii")
+
+def decrypt_message(stored_value: str, code: str) -> str:
+    encrypted_bytes = base64.b64decode(stored_value.encode("ascii"))
+    encrypted = encrypted_bytes.decode("utf-8", errors="ignore")
+    return encrypt_decrypt(encrypted, code)

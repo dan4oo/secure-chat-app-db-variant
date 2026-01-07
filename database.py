@@ -1,6 +1,6 @@
 import json
 import urllib.request
-from security import hash_password, verify_password, encrypt_decrypt
+from security import encrypt_message, hash_password, verify_password, encrypt_decrypt
 from config import SUPABASE_URL, SUPABASE_PUBLISHABLE_DEFAULT_KEY as SUPABASE_KEY
 
 HEADERS = {
@@ -66,7 +66,7 @@ def get_user_id(username): # get user id by username
     
 # Insert message
 def insert_message(username, message, isLink, code):
-    message = encrypt_decrypt(message, code)
+    message = encrypt_message(message, code)
     user_id = get_user_id(username)
     data = json.dumps({"user_id": user_id, "message": message, "is_link": isLink}).encode()
     _request(f"{SUPABASE_URL}/rest/v1/messages", "POST", data)
@@ -112,4 +112,13 @@ def is_new_messages(local_messages_len):
     local_count = local_messages_len
 
     return db_count != local_count
+
+def delete_all_messages_for_user(username):
+    user_id = get_user_id(username)
+
+    _request(
+        f"{SUPABASE_URL}/rest/v1/messages?user_id=eq.{user_id}",
+        "DELETE"
+    )
+
 

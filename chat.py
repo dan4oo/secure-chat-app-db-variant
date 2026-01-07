@@ -3,35 +3,34 @@ import threading
 import os
 import webbrowser
 import getpass
-from database import create_user, insert_message, get_all_messages, is_new_messages, user_exists, check_password
+from database import create_user, delete_all_messages_for_user, insert_message, get_all_messages, is_new_messages, user_exists, check_password
 from config import POLL_INTERVAL
-from security import encrypt_decrypt
+from security import decrypt_message
 
 userIsLoggedIn = False
 
 def handleLogin():
     global username
     global code
+    global messages
     username = input("Enter your name: ").strip()
     password = getpass.getpass("Enter your password: ").strip()
     code = input("Enter room code: ").strip()
+    messages = get_all_messages()
     if user_exists(username) is False:
         create_user(username, password)
         display_messages()
+        displayHelp()
     elif check_password(username, password) is False:
         print("Incorrect password. Exiting.")
         exit(1)
     display_messages()
 
-def terminal_link(text, url):
-    return f"\033]8;;{url}\033\\{text}\033]8;;\033\\"
-
-
 def display_messages():
     clear_terminal()
     current_user = None
     for m in messages:
-        m["message"] = encrypt_decrypt(m["message"], code)
+        m["message"] = decrypt_message(m["message"], code)
         if current_user != m["username"]:
             current_user = m["username"]
             print()
@@ -45,6 +44,13 @@ def display_messages():
                 # handle clickable link in terminal
             except Exception:
                 pass
+
+def displayHelp():
+    print("Available commands:")
+    print("/exit - Exit the application")
+    print("/logout - Log out of the current session")
+    print("/link <URL> - Send a clickable link")
+    print("/deletemine - Delete all your messages from the chat")
 
 def clear_terminal():
     # Windows
@@ -63,11 +69,17 @@ def handleCommands(command):
         global running
         running = False
     elif command.lower() == "/logout":
+        clear_terminal()
         global userIsLoggedIn
         userIsLoggedIn = False
-        handleLogin()
     elif command.lower()[:5] == "/link":
         insert_message(username, command[6:], True, code)
+    elif command.lower() == "/help":
+        displayHelp()
+    elif command == "/deletemine":
+        prompt = input("Are you sure you want to delete all your messages? (y/n): ").strip().lower()
+        if prompt == "y":
+            delete_all_messages_for_user(username)
     else:
         print("Unknown command.")
     
