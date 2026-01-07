@@ -63,7 +63,7 @@ message	Text	Encrypted or plaintext
 is_link	Boolean	True if message is a link
 created_at	Timestamp	Default now()
 
-Update your database.py with your Supabase URL and anon key.
+Create the config.py with your Supabase URL and anon key.
 
 Usage
 python3 chat.py
